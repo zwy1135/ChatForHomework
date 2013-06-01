@@ -10,6 +10,7 @@ import socket
 import threading
 import SocketServer
 
+
 class MyHandler(SocketServer.BaseRequestHandler):
     '''
     请求处理部分    
@@ -44,10 +45,10 @@ def main(HOST='localhost',PORT=8888):
     server_thread = threading.Thread(target=server.serve_forever)
     server_thread.daemon = True
     server_thread.start()
-#    ip, port = server.server_address
-#    client(ip, port, "Hello World 1")
-#    client(ip, port, "Hello World 2")
-#    client(ip, port, "Hello World 3")
+    ip, port = server.server_address
+    client(ip, port, "Hello World 1")
+    client(ip, port, "Hello World 2")
+    client(ip, port, "Hello World 3")
     
 if __name__=='__main__':
     if sys.argv[1:]:
