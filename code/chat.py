@@ -18,7 +18,7 @@ class chatServer(SocketServer.ThreadingTCPServer):
     '''
     def __init__(self, server_address, RequestHandlerClass, mainserver=False,bind_and_activate=True):
         SocketServer.ThreadingTCPServer.__init__(self, server_address, RequestHandlerClass, bind_and_activate=True)
-        self.allclients=[]
+        self.allclients={}
         self.mainserver = mainserver
         print 'Listent at',server_address,mainserver
 
@@ -31,19 +31,19 @@ class myHandler(SocketServer.BaseRequestHandler):
         data2 = self.request.recv(1024)
         data = cPickle.loads(data2)
         clients=[client[0] for client in self.server.allclients]
-        if not data['name'] in clients:
-            self.server.allclients.append((data['name'],self.client_address[0]))
         print data['name'],u' 说: ',data['say']
         #print 'mainserver',self.server.mainserver
-        #
+        #以下是主机的部分：
         if self.server.mainserver:
+            #if not data['name'] in clients:
+            self.server.allclients[data['name']]=self.client_address[0]
             msg = data2
             for o in self.server.allclients:
                 #print o
-                if o[1]!=self.server.server_address:
+                if self.server.allclients[o]!=self.server.server_address:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     try:                
-                        sock.connect((o[1],8887))
+                        sock.connect((self.server.allclients[o],8887))
                         sock.sendall(msg)
                     except:
                         pass
@@ -86,12 +86,11 @@ def main(name,targetaddr,mainserver=False):
         selfserver=chatServer(('0.0.0.0',8888),myHandler,mainserver)
     else:
         selfserver=chatServer(('0.0.0.0',8887),myHandler,mainserver)
-    selfclient=client(name,targetaddr)
     sthread = threading.Thread(target=selfserver.serve_forever)
     sthread.daemon = True
     sthread.start()
-    while 1:
-        selfclient.say()
+    selfclient=client(name,targetaddr)
+    selfclient.say()
         
 if __name__=='__main__':
     if len(sys.argv)==3:
@@ -107,9 +106,16 @@ if __name__=='__main__':
         main(name,targetaddr,t)
     else:
         import os
-        print u'请在命令行模式启动并添加参数： 客户端名 目标地址 [主机]'
-        print u'例如：'
-        print u'./server3 name 0.0.0.0'
+        # print u'请在命令行模式启动并添加参数： 客户端名 目标地址 [主机]'
+        # print u'例如：'
+        # print u'./server3 name 0.0.0.0'
+        print u'请输入你想使用的姓名'
+        name = raw_input()
+        print u"请输入目标地址，主机请用127.0.0.1"
+        targetaddr = raw_input()
+        print u'是否主机（1/0）'
+        t = input()
+        main(name,targetaddr,t)
         os.system('pause')
                 
         
