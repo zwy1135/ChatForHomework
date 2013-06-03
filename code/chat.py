@@ -11,7 +11,7 @@ import SocketServer
 import threading
 import cPickle
 
-
+printint = 0
 class chatServer(SocketServer.ThreadingTCPServer):
     '''
     服务器程序。
@@ -20,6 +20,7 @@ class chatServer(SocketServer.ThreadingTCPServer):
         SocketServer.ThreadingTCPServer.__init__(self, server_address, RequestHandlerClass, bind_and_activate=True)
         self.allclients={}
         self.mainserver = mainserver
+        self.printing = 0
         print 'Listent at',server_address,mainserver
 
 
@@ -31,7 +32,11 @@ class myHandler(SocketServer.BaseRequestHandler):
         data2 = self.request.recv(1024)
         data = cPickle.loads(data2)
         clients=[client[0] for client in self.server.allclients]
+        while self.server.printing:
+            pass
+        self.server.printing = 1
         print data['name'],u' 说: ',data['say']
+        self.server.printing = 0
         #print 'mainserver',self.server.mainserver
         #以下是主机的部分：
         if self.server.mainserver:
